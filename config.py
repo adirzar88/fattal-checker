@@ -1,3 +1,5 @@
+import os
+
 # ===================================
 # הגדרות בדיקת זמינות יו ספלאש
 # ===================================
@@ -12,10 +14,8 @@ CHILDREN = 2
 INFANTS  = 1
 ROOMS    = 1
 
-# מייל לקבלת התראה
-TO_EMAIL = "adirzar@gmail.com"
-
-# EmailJS פרטי
-EMAILJS_SERVICE_ID  = "service_j6nnbj7"
-EMAILJS_TEMPLATE_ID = "template_5izw16r"
-EMAILJS_PUBLIC_KEY  = "6bgtpC1pPcRLw5Eh7"
+# Sensitive values loaded from environment variables (GitHub Secrets)
+TO_EMAIL            = os.environ["TO_EMAIL"]
+EMAILJS_SERVICE_ID  = os.environ["EMAILJS_SERVICE_ID"]
+EMAILJS_TEMPLATE_ID = os.environ["EMAILJS_TEMPLATE_ID"]
+EMAILJS_PUBLIC_KEY  = os.environ["EMAILJS_PUBLIC_KEY"]
