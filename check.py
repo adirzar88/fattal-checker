@@ -15,10 +15,18 @@ def check_availability():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url, wait_until="domcontentloaded", timeout=60000)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            locale="he-IL",
+        )
+        page = context.new_page()
 
-        # Wait for search result cards to appear (loaded dynamically by JS)
+        try:
+            page.goto(url, timeout=90000)
+        except Exception as e:
+            print(f"⚠️ Page load timed out, checking what loaded so far...")
+
+        # Wait for search result cards to appear
         try:
             page.wait_for_selector('[id^="search-page-search-result-main_"]', timeout=45000)
         except Exception:
@@ -27,6 +35,8 @@ def check_availability():
             return False
 
         cards = page.query_selector_all('[id^="search-page-search-result-main_"]')
+        print(f"   נמצאו {len(cards)} תוצאות חיפוש")
+
         found = False
         for card in cards:
             text = card.inner_text()
