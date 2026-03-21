@@ -1,5 +1,6 @@
-import requests
+from playwright.sync_api import sync_playwright
 from config import *
+import requests
 
 def check_availability():
     url = (
@@ -9,19 +10,32 @@ def check_availability():
         f"&Rooms={ROOMS}&Ad1={ADULTS}&Ch1={CHILDREN}&Inf1={INFANTS}"
     )
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "he-IL,he;q=0.9",
-    }
-
     print(f"🔍 בודק זמינות ביו ספלאש...")
     print(f"   צ'ק אין: {CHECK_IN} | צ'ק אאוט: {CHECK_OUT}")
 
-    response = requests.get(url, headers=headers, timeout=30)
-    html = response.text
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url, wait_until="networkidle", timeout=60000)
 
-    # בדיקה אם יו ספלאש מופיע בתוצאות
-    found = "u-splash-resort-eilat-hotel" in html or "יו ספלאש" in html
+        # Wait for search result cards to appear
+        try:
+            page.wait_for_selector('[id^="search-page-search-result-main_"]', timeout=30000)
+        except Exception:
+            print("❌ No search results loaded — U Splash not available")
+            browser.close()
+            return False
+
+        cards = page.query_selector_all('[id^="search-page-search-result-main_"]')
+        found = False
+        for card in cards:
+            text = card.inner_text()
+            html = card.inner_html()
+            if "יו ספלאש" in text or "u-splash-resort-eilat-hotel" in html:
+                found = True
+                break
+
+        browser.close()
 
     if found:
         print("✅ יו ספלאש זמין! שולח מייל...")
