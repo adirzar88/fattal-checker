@@ -16,11 +16,11 @@ def check_availability():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(url, wait_until="networkidle", timeout=60000)
+        page.goto(url, wait_until="domcontentloaded", timeout=60000)
 
-        # Wait for search result cards to appear
+        # Wait for search result cards to appear (loaded dynamically by JS)
         try:
-            page.wait_for_selector('[id^="search-page-search-result-main_"]', timeout=30000)
+            page.wait_for_selector('[id^="search-page-search-result-main_"]', timeout=45000)
         except Exception:
             print("❌ No search results loaded — U Splash not available")
             browser.close()
