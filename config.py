@@ -1,24 +1,21 @@
-name: U Splash Availability Check
+# ===================================
+# הגדרות בדיקת זמינות יו ספלאש
+# ===================================
 
-on:
-  schedule:
-    - cron: '*/5 * * * *'   # כל 5 דקות
-  workflow_dispatch:          # אפשרות להפעיל ידנית
+# תאריכים
+CHECK_IN  = "2026-03-27"   # תאריך הגעה (YYYY-MM-DD)
+CHECK_OUT = "2026-03-28"   # תאריך עזיבה (YYYY-MM-DD)
 
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+# הרכב האורחים
+ADULTS   = 2
+CHILDREN = 2
+INFANTS  = 1
+ROOMS    = 1
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+# מייל לקבלת התראה
+TO_EMAIL = "adirzar@gmail.com"
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Run availability check
-        run: python check.py
+# EmailJS פרטי
+EMAILJS_SERVICE_ID  = "service_j6nnbj7"
+EMAILJS_TEMPLATE_ID = "template_5izw16r"
+EMAILJS_PUBLIC_KEY  = "6bgtpC1pPcRLw5Eh7"
