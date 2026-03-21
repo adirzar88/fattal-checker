@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from config import *
 import requests
+import os
 
 def check_availability():
     url = (
@@ -50,6 +51,7 @@ def check_availability():
     if found:
         print("✅ יו ספלאש זמין! שולח מייל...")
         send_email()
+        disable_workflow()
     else:
         print("❌ יו ספלאש לא זמין בתאריכים אלו")
 
@@ -75,6 +77,24 @@ def send_email():
         print(f"📧 מייל נשלח בהצלחה ל-{TO_EMAIL}")
     else:
         print(f"⚠️ שגיאה בשליחת מייל: {response.text}")
+
+def disable_workflow():
+    token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not token or not repo:
+        print("⚠️ Cannot disable workflow — not running in GitHub Actions")
+        return
+
+    workflow_id = "check.yml"
+    url = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow_id}/disable"
+    response = requests.put(url, headers={
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    })
+    if response.status_code == 204:
+        print("🛑 Workflow disabled — no more automatic checks")
+    else:
+        print(f"⚠️ Could not disable workflow: {response.status_code} {response.text}")
 
 if __name__ == "__main__":
     check_availability()
