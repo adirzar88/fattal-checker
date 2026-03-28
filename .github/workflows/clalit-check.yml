@@ -1,0 +1,64 @@
+name: Clalit Dermatologist Appointment Check
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode (scan only, no booking)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  actions: write
+  contents: read
+
+defaults:
+  run:
+    working-directory: clalit-checker
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Run appointment check
+        env:
+          CI: "true"
+          TEST_MODE: ${{ github.event.inputs.test_mode || 'false' }}
+          CLALIT_ID: ${{ secrets.CLALIT_ID }}
+          CLALIT_USER_CODE: ${{ secrets.CLALIT_USER_CODE }}
+          CLALIT_PASSWORD: ${{ secrets.CLALIT_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          EMAILJS_SERVICE_ID: ${{ secrets.EMAILJS_SERVICE_ID }}
+          EMAILJS_TEMPLATE_ID: ${{ secrets.EMAILJS_TEMPLATE_ID }}
+          EMAILJS_PUBLIC_KEY: ${{ secrets.EMAILJS_PUBLIC_KEY }}
+          EMAILJS_PRIVATE_KEY: ${{ secrets.EMAILJS_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python check.py || true
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clalit-screenshots-${{ github.run_number }}
+          path: clalit-checker/screenshots/
+          retention-days: 3
