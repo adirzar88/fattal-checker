@@ -37,10 +37,14 @@ def ss(page, name):
 
 def login(page):
     log("Logging in...")
-    page.goto(LOGIN_URL, timeout=60000, wait_until="domcontentloaded")
-    page.wait_for_timeout(3000)
+    page.goto(LOGIN_URL, timeout=90000, wait_until="domcontentloaded")
+    page.wait_for_timeout(5000)
 
-    page.fill("#ctl00_cphBody__loginView_tbUserId", ID_NUMBER)
+    id_field = page.locator("#ctl00_cphBody__loginView_tbUserId")
+    id_field.wait_for(state="visible", timeout=60000)
+    ss(page, "00_login_page")
+
+    id_field.fill(ID_NUMBER)
     page.fill("#ctl00_cphBody__loginView_tbUserName", USER_CODE)
     page.fill("#ctl00_cphBody__loginView_tbPassword", PASSWORD)
 
@@ -51,7 +55,7 @@ def login(page):
         return False
 
     page.locator("#ctl00_cphBody__loginView_btnSend").click()
-    page.wait_for_timeout(5000)
+    page.wait_for_timeout(8000)
 
     if "login" in page.url.lower():
         log("Login FAILED - check credentials")
